@@ -8,64 +8,60 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root { 
-    --bg: #f0f4f8; 
-    --card: #ffffff; 
-    --border: #e2e8f0; 
-    --text: #0f172a; 
-    --muted: #64748b; 
-    --brand: #0ea5e9; /* Cyber Blue */
-    --brand-glow: rgba(14, 165, 233, 0.4);
-    --green: #10b981; 
-    --yellow: #f59e0b; 
-    --red: #ef4444; 
+    --bg: #f0f4f8; var(--card): #ffffff; --border: #e2e8f0; --text: #0f172a; 
+    --muted: #64748b; --brand: #0ea5e9; --brand-glow: rgba(14, 165, 233, 0.4);
+    --green: #10b981; --yellow: #f59e0b; --red: #ef4444; 
   }
-  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; background: linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px); background-size: 30px 30px; pointer-events: none; z-index: -1; }
   
-  /* Cyber Effects */
-  body::before {
-    content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
-    background-size: 30px 30px; pointer-events: none; z-index: -1;
-  }
-
-  .header { background: var(--card); border-bottom: 2px solid var(--brand); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px var(--brand-glow); position: relative; z-index: 10; }
-  .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 1px;}
+  .header { background: #fff; border-bottom: 2px solid var(--brand); padding: 16px 24px; display: flex; justify-content: space-between; box-shadow: 0 4px 20px var(--brand-glow); }
+  .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--text); text-transform: uppercase; }
   .logo span { color: var(--brand); text-shadow: 0 0 10px var(--brand-glow); }
   
   .auth-overlay { position: fixed; inset: 0; background: rgba(240, 244, 248, 0.9); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 100; transition: 0.3s; }
-  .auth-card { background: var(--card); padding: 40px; border-radius: 16px; border: 1px solid var(--brand); box-shadow: 0 10px 30px var(--brand-glow); width: 100%; max-width: 400px; text-align: center; position: relative; overflow: hidden; }
-  .auth-card::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 2px; background: var(--brand); animation: scanline 2s infinite linear; }
-  @keyframes scanline { 100% { left: 200%; } }
+  .auth-card { background: #fff; padding: 40px; border-radius: 16px; border: 1px solid var(--brand); box-shadow: 0 10px 30px var(--brand-glow); width: 100%; max-width: 400px; text-align: center; }
+  .auth-card input { width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 8px; }
   
-  .auth-card input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; transition: 0.3s; }
-  .auth-card input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 10px var(--brand-glow); }
+  .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; transition: 0.2s; }
+  .btn-primary { background: var(--brand); color: #fff; box-shadow: 0 4px 15px var(--brand-glow); }
+  .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-green { background: var(--green); color: #fff; }
   
-  .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
-  .btn-primary { background: var(--brand); color: #fff; width: 100%; box-shadow: 0 4px 15px var(--brand-glow); }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--brand-glow); filter: brightness(1.1); }
-  
-  .container { padding: 24px; max-width: 1400px; margin: 0 auto; display: none; }
-  .container.active { display: block; animation: fadeIn 0.5s ease-out; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-  .nav { display: flex; gap: 8px; padding: 16px 24px; background: var(--card); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-  .nav-btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; background: transparent; color: var(--muted); transition: 0.2s; display: flex; align-items: center; gap: 6px;}
+  .nav { display: flex; gap: 8px; padding: 16px 24px; background: #fff; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .nav-btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; background: transparent; color: var(--muted); }
   .nav-btn.active, .nav-btn:hover { background: var(--bg); color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
   
+  .container { padding: 24px; max-width: 1400px; margin: 0 auto; display: none; }
+  .container.active { display: block; }
+  .tab { display: none; }
+  .tab.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; position: relative; overflow: hidden; transition: 0.3s; }
+  .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 24px; transition: 0.3s; }
   .stat-card:hover { border-color: var(--brand); box-shadow: 0 10px 20px var(--brand-glow); transform: translateY(-5px); }
-  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'Orbitron', sans-serif; }
+  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; font-family: 'Orbitron', sans-serif; margin-bottom: 8px; }
   .stat-val { font-size: 32px; font-weight: 700; color: var(--text); }
-  .stat-val.blue { color: var(--brand); }
   
-  /* Sisanya styling standar yang diperbarui warnanya */
-  .alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; text-align: center; font-weight: 600; }
-  .alert.show { display: block; animation: fadeIn 0.3s; }
-  .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
-  .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+  .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
   
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px 16px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--border); }
+  th { background: var(--bg); color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; }
+  tr:hover td { background: #f8fafc; }
+  input[type="number"] { padding: 6px; border: 1px solid var(--border); border-radius: 6px; width: 100px; }
+  
+  .badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  .badge-success { background: #d1fae5; color: #065f46; }
+  .badge-pending { background: #fef3c7; color: #92400e; }
+  
+  .alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+  .alert.show { display: block; }
+  .alert-success { background: #d1fae5; color: #065f46; }
+  .alert-error { background: #fee2e2; color: #991b1b; }
   .hidden { display: none !important; }
 </style>
 </head>
@@ -73,106 +69,238 @@
 
 <div class="auth-overlay" id="authLayer">
   <div class="auth-card" id="loginBox">
-    <h2 style="font-family: 'Orbitron'; margin-bottom: 8px; color: var(--brand);">SYSTEM LOGIN</h2>
-    <p style="font-size: 13px; color: var(--muted); margin-bottom: 24px;">Autentikasi Diperlukan</p>
+    <h2 style="font-family: 'Orbitron'; color: var(--brand); margin-bottom: 20px;">SYSTEM LOGIN</h2>
     <div id="authAlert" class="alert"></div>
     <input type="email" id="emailInput" placeholder="Admin Email" />
     <input type="password" id="passInput" placeholder="Password" />
-    <button class="btn btn-primary" onclick="requestOtp()">Minta Kode OTP</button>
+    <button class="btn btn-primary" style="width:100%" onclick="requestOtp()">Minta Kode OTP</button>
   </div>
-
   <div class="auth-card hidden" id="otpBox">
-    <h2 style="font-family: 'Orbitron'; margin-bottom: 8px; color: var(--brand);">VERIFIKASI OTP</h2>
-    <p style="font-size: 13px; color: var(--muted); margin-bottom: 24px;">Cek email lu masbro.</p>
+    <h2 style="font-family: 'Orbitron'; color: var(--brand); margin-bottom: 20px;">VERIFIKASI OTP</h2>
     <div id="otpAlert" class="alert"></div>
-    <input type="text" id="otpInput" placeholder="Masukkan 6 Digit OTP" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 4px; font-family: monospace;" />
-    <button class="btn btn-primary" onclick="verifyOtp()">Verifikasi & Masuk</button>
+    <input type="text" id="otpInput" placeholder="6 Digit OTP" style="text-align: center; font-size: 20px; letter-spacing: 4px;" />
+    <button class="btn btn-primary" style="width:100%" onclick="verifyOtp()">Verifikasi</button>
   </div>
 </div>
 
 <div class="header">
   <div class="logo">Premium<span>Kita</span></div>
-  <button class="btn" style="background: var(--bg); color: var(--text); border: 1px solid var(--border);" onclick="logout()">🛑 Logout</button>
+  <button class="btn btn-red" onclick="logout()">Logout</button>
 </div>
 
 <div class="nav">
-  <button class="nav-btn active">📊 Statistik Dashboard</button>
+  <button class="nav-btn active" onclick="switchTab('stats')">📊 Statistik</button>
+  <button class="nav-btn" onclick="switchTab('users')">👥 Pengguna</button>
+  <button class="nav-btn" onclick="switchTab('transactions')">💰 Deposit</button>
+  <button class="nav-btn" onclick="switchTab('orders')">📦 Order Premium</button>
+  <button class="nav-btn" onclick="switchTab('pricing')">🏷️ Harga Premku</button>
 </div>
 
 <div class="container" id="dashboardContent">
-  <div class="stats">
-    <div class="stat-card"><div class="stat-label">Total Pengguna</div><div class="stat-val blue" id="s-users">0</div></div>
-    <div class="stat-card"><div class="stat-label">Keamanan Sesi</div><div class="stat-val" style="color: var(--green); font-size: 24px;">AKTIF</div></div>
+  <div id="alert" class="alert"></div>
+
+  <div id="tab-stats" class="tab active">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">Total Pengguna</div><div class="stat-val" style="color:var(--brand)" id="s-users">—</div></div>
+      <div class="stat-card"><div class="stat-label">Deposit Pending</div><div class="stat-val" style="color:var(--yellow)" id="s-dep">—</div></div>
+      <div class="stat-card"><div class="stat-label">Order Pending</div><div class="stat-val" style="color:var(--yellow)" id="s-ord">—</div></div>
+      <div class="stat-card"><div class="stat-label">Total Pemasukan</div><div class="stat-val" style="color:var(--green)" id="s-rev">—</div></div>
+    </div>
   </div>
+
+  <div id="tab-users" class="tab">
+    <div class="card">
+      <div class="card-header">👥 Daftar Pengguna <button class="btn btn-primary" onclick="loadUsers()">🔄 Refresh</button></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Nomor</th><th>Saldo Premku</th><th>Saldo Nokos</th><th>Saldo SMM</th><th>Aksi</th></tr></thead>
+          <tbody id="users-tbody"><tr><td colspan="5">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
   </div>
+
+  <div id="tab-transactions" class="tab">
+    <div class="card">
+      <div class="card-header">💰 Riwayat Deposit <button class="btn btn-primary" onclick="loadTransactions()">🔄 Refresh</button></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Invoice</th><th>User</th><th>Wallet</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="tx-tbody"><tr><td colspan="6">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-pricing" class="tab">
+    <div class="card">
+      <div class="card-header">🏷️ Harga Jual Premku <button class="btn btn-primary" onclick="loadPricing()">🔄 Refresh</button></div>
+      <div id="pricing-list" style="padding: 16px;">Memuat data...</div>
+    </div>
+  </div>
+  
+  <div id="tab-orders" class="tab">
+    <div class="card">
+      <div class="card-header">📦 Order Premium <button class="btn btn-primary" onclick="loadOrders()">🔄 Refresh</button></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Invoice</th><th>User</th><th>Produk</th><th>Harga</th><th>Status</th></tr></thead>
+          <tbody id="ord-tbody"><tr><td colspan="5">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 let currentEmail = '';
+const fmt = (n) => 'Rp' + Number(n||0).toLocaleString('id-ID');
 
-function showAlert(id, msg, type='success') {
-  const el = document.getElementById(id);
+function showAlert(msg, type='success', targetId='alert') {
+  const el = document.getElementById(targetId);
   el.className = `alert alert-${type} show`;
   el.textContent = msg;
   setTimeout(() => el.classList.remove('show'), 4000);
 }
 
+// Custom API Wrapper (Tanpa perlu token di header, karena kita pakai Cookie JWT!)
+async function api(path, opts={}) {
+  const res = await fetch('/api' + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  const data = await res.json();
+  if (res.status === 401) { location.reload(); } // Kalau sesi habis, tendang ke login
+  return data;
+}
+
+// ─── AUTH LOGIC ───
 async function requestOtp() {
   const email = document.getElementById('emailInput').value;
   const password = document.getElementById('passInput').value;
-  
-  const res = await fetch('/api/auth/request-otp', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
+  const res = await fetch('/api/auth/request-otp', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email, password }) });
   const data = await res.json();
-  
   if (data.ok) {
     currentEmail = email;
     document.getElementById('loginBox').classList.add('hidden');
     document.getElementById('otpBox').classList.remove('hidden');
-    showAlert('otpAlert', 'OTP dikirim ke email!', 'success');
-  } else {
-    showAlert('authAlert', data.message, 'error');
-  }
+  } else { showAlert(data.message, 'error', 'authAlert'); }
 }
 
 async function verifyOtp() {
   const otp = document.getElementById('otpInput').value;
-  
-  const res = await fetch('/api/auth/verify-otp', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: currentEmail, otp })
-  });
+  const res = await fetch('/api/auth/verify-otp', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email: currentEmail, otp }) });
   const data = await res.json();
-  
   if (data.ok) {
     document.getElementById('authLayer').classList.add('hidden');
     document.getElementById('dashboardContent').classList.add('active');
-    loadStats(); // Fungsi ini butuh route backend yang diproteksi auth
-  } else {
-    showAlert('otpAlert', data.message, 'error');
-  }
+    loadStats();
+  } else { showAlert(data.message, 'error', 'otpAlert'); }
 }
 
-async function logout() {
-  await fetch('/api/auth/logout', { method: 'POST' });
-  location.reload(); // Refresh halaman agar kembali ke menu login
+async function logout() { await fetch('/api/auth/logout', { method: 'POST' }); location.reload(); }
+
+// ─── TABS & DATA LAMA ───
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  
+  if (name === 'stats') loadStats();
+  if (name === 'users') loadUsers();
+  if (name === 'transactions') loadTransactions();
+  if (name === 'orders') loadOrders();
+  if (name === 'pricing') loadPricing();
 }
 
 async function loadStats() {
-  const res = await fetch('/api/stats');
-  const data = await res.json();
-  if (data.ok) {
-    document.getElementById('s-users').textContent = data.data.totalUsers;
-  } else {
-    // Kalo token habis/gak ada cookie, tendang ke login
-    location.reload();
+  const d = await api('/stats');
+  if (d.ok) {
+    document.getElementById('s-users').textContent = d.data.totalUsers;
+    document.getElementById('s-dep').textContent = d.data.pendingDeposits;
+    document.getElementById('s-ord').textContent = d.data.pendingOrders;
+    document.getElementById('s-rev').textContent = fmt(d.data.totalRevenue);
   }
 }
 
-// Cek otomatis saat awal muat, kalau udah ada cookie yang valid, langsung buka dashboard
+async function loadUsers() {
+  const d = await api('/users');
+  if (!d.ok) return;
+  document.getElementById('users-tbody').innerHTML = d.data.map(u => `
+    <tr>
+      <td><b>${u.number}</b></td>
+      <td><input type="number" id="prem_${u.number}" value="${u.balance_prem||0}" /></td>
+      <td><input type="number" id="nokos_${u.number}" value="${u.balance_nokos||0}" /></td>
+      <td><input type="number" id="smm_${u.number}" value="${u.balance_smm||0}" /></td>
+      <td><button class="btn btn-green" onclick="saveUser('${u.number}')">Simpan</button></td>
+    </tr>
+  `).join('');
+}
+
+async function saveUser(num) {
+  const d = await api(`/users/${num}`, { method: 'PATCH', body: JSON.stringify({
+    balance_prem: document.getElementById(`prem_${num}`).value,
+    balance_nokos: document.getElementById(`nokos_${num}`).value,
+    balance_smm: document.getElementById(`smm_${num}`).value,
+  })});
+  showAlert(d.ok ? 'Saldo diupdate!' : d.message, d.ok ? 'success' : 'error');
+}
+
+async function loadTransactions() {
+  const d = await api('/transactions');
+  if (!d.ok) return;
+  document.getElementById('tx-tbody').innerHTML = d.data.map(t => `
+    <tr>
+      <td>${t.invoice}</td><td>${t.buyer}</td><td><b>${t.wallet}</b></td><td>${fmt(t.amountReal)}</td>
+      <td><span class="badge ${t.status==='success'?'badge-success':'badge-pending'}">${t.status}</span></td>
+      <td>${t.status === 'pending' ? `<button class="btn btn-green" onclick="confirmDeposit('${t.invoice}')">Konfirmasi</button>` : 'Selesai'}</td>
+    </tr>
+  `).join('');
+}
+
+async function confirmDeposit(inv) {
+  if (!confirm('Konfirmasi deposit ini?')) return;
+  const d = await api(`/transactions/${inv}/confirm`, { method: 'POST' });
+  showAlert(d.ok ? d.message : d.message, d.ok ? 'success' : 'error');
+  if(d.ok) loadTransactions();
+}
+
+async function loadOrders() {
+  const d = await api('/premium-orders');
+  if (!d.ok) return;
+  document.getElementById('ord-tbody').innerHTML = d.data.map(o => `
+    <tr><td>${o.invoice}</td><td>${o.buyer}</td><td>${o.productName}</td><td>${fmt(o.price)}</td><td><span class="badge ${o.status==='success'?'badge-success':'badge-pending'}">${o.status}</span></td></tr>
+  `).join('');
+}
+
+async function loadPricing() {
+  const [prods, sett] = await Promise.all([api('/premku-products'), api('/settings')]);
+  if (!prods.ok) return;
+  const pricing = sett.data?.premkuPricing || {};
+  document.getElementById('pricing-list').innerHTML = (prods.data || []).map(p => `
+    <div style="display:flex; gap:10px; align-items:center; border-bottom:1px solid #eee; padding:8px 0;">
+      <div style="flex:1;"><b>${p.name}</b> <br><small style="color:#888">API: ${fmt(p.price)}</small></div>
+      <input type="number" id="price_${p.id}" value="${pricing[p.id] || ''}" placeholder="Harga jual..." />
+      <button class="btn btn-primary" onclick="savePrice(${p.id})">Simpan</button>
+      <button class="btn btn-red" onclick="resetPrice(${p.id})">Reset</button>
+    </div>
+  `).join('');
+}
+
+async function savePrice(id) {
+  const val = document.getElementById(`price_${id}`).value;
+  const d = await api('/settings/premku-pricing', { method: 'POST', body: JSON.stringify({ productId: id, price: val || 0 }) });
+  showAlert(d.ok ? 'Harga disimpan!' : d.message, d.ok ? 'success' : 'error');
+}
+
+async function resetPrice(id) {
+  document.getElementById(`price_${id}`).value = '';
+  const d = await api('/settings/premku-pricing', { method: 'POST', body: JSON.stringify({ productId: id, price: null }) });
+  showAlert(d.ok ? 'Di-reset ke harga asli.' : d.message, d.ok ? 'success' : 'error');
+}
+
+// Cek sesi awal
 window.onload = async () => {
   const res = await fetch('/api/stats');
   if (res.ok) {
