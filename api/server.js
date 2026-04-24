@@ -3,9 +3,10 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const rateLimit = require('express-rate-limit');
-// Asumsi module lu ada di luar folder api (di root)
-const { connectDB } = require('../database');
+const mongoose = require('mongoose');
+
+// PASTIKAN SEMUA FILE INI ADA DI FOLDER LU!
+// Kalo salah satu file ini nggak ada atau nggak ke-push ke GitHub, Vercel bakal langsung Error 500.
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const PremiumOrder = require('../models/PremiumOrder');
@@ -15,40 +16,28 @@ const config = require('../config');
 
 const app = express();
 
-// Keamanan Tingkat Dewa: Trust proxy (buat Vercel) & Rate Limiting
-app.set('trust proxy', 1);
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 menit
-  max: 100, // Limit tiap IP 100 request
-  message: { ok: false, message: 'Terlalu banyak request, coba lagi nanti masbro.' }
-});
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(limiter);
 
-// Serve static dari public
+// Serve static HTML (Dashboard Cyber Putih Biru lu)
 app.use(express.static(path.join(__dirname, '../public')));
 
-// ENV Variables (Pastikan diset di Vercel!)
-const JWT_SECRET = process.env.JWT_SECRET || 'rahasia_negara_tingkat_dewa';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@domainlu.com';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'password_dashboard_lu';
-const MONGO_URI = process.env.MONGO_URI; // Panggil dari Vercel ENV
+// ENV Variables - WAJIB ADA DI SETTINGS VERCEL
+const JWT_SECRET = process.env.JWT_SECRET || 'premiumkita_secret_dewa';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@premiumkita.com';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
 
-// Setup Nodemailer
+// Setup Nodemailer buat OTP
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // atau host SMTP lu
+  service: 'gmail',
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS 
   }
 });
 
-// Cache OTP sementara (Di production serverless baiknya simpan di DB/Redis, 
-// tapi untuk MVP ini kita simpan di memory. Vercel kadang mereset memory, 
-// jadi pastikan deploy dengan region yang sama).
+// Cache OTP di memory (Bisa di-upgrade ke DB buat next step)
 const otpStore = new Map();
 
 // ─── AUTHENTICATION (EMAIL + OTP + COOKIE) ──────────────────────────────────
@@ -56,23 +45,23 @@ app.post('/api/auth/request-otp', async (req, res) => {
   const { email, password } = req.body;
   
   if (email !== ADMIN_EMAIL || password !== ADMIN_PASS) {
-    return res.status(401).json({ ok: false, message: 'Kredensial salah!' });
+    return res.status(401).json({ ok: false, message: 'Kredensial salah bro!' });
   }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
   otpStore.set(email, { otp, expires: Date.now() + 5 * 60000 }); // Expired 5 menit
 
   try {
     await transporter.sendMail({
-      from: '"PremiumKita Security" <no-reply@premiumkita.com>',
+      from: '"System Security" <no-reply@premiumkita.com>',
       to: email,
-      subject: 'Kode OTP Login Dashboard',
-      html: `<h3>Sistem Keamanan Robotik Aktif</h3><p>Kode OTP lu: <b>${otp}</b></p><p>Berlaku 5 menit bro.</p>`
+      subject: 'Kode OTP Dashboard PremiumKita',
+      html: `<h3>Sistem Keamanan Aktif</h3><p>Kode OTP lu: <b style="font-size:24px; color:#0ea5e9;">${otp}</b></p><p>Berlaku 5 menit.</p>`
     });
     res.json({ ok: true, message: 'OTP dikirim ke email.' });
   } catch (error) {
     console.error('Email error:', error);
-    res.status(500).json({ ok: false, message: 'Gagal kirim email OTP.' });
+    res.status(500).json({ ok: false, message: 'Gagal kirim email OTP. Cek config SMTP lu.' });
   }
 });
 
@@ -81,15 +70,13 @@ app.post('/api/auth/verify-otp', (req, res) => {
   const record = otpStore.get(email);
 
   if (!record || record.otp !== otp || Date.now() > record.expires) {
-    return res.status(401).json({ ok: false, message: 'OTP salah atau kadaluarsa.' });
+    return res.status(401).json({ ok: false, message: 'OTP salah atau udah kadaluarsa.' });
   }
 
-  otpStore.delete(email); // Hapus OTP setelah sukses
+  otpStore.delete(email); 
 
-  // Buat token JWT umur 1 Jam
   const token = jwt.sign({ role: 'admin', email }, JWT_SECRET, { expiresIn: '1h' });
   
-  // Set Cookie HTTPOnly biar Hacker Anti-XSS
   res.cookie('auth_token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -97,13 +84,13 @@ app.post('/api/auth/verify-otp', (req, res) => {
     maxAge: 3600000 // 1 jam
   });
 
-  res.json({ ok: true, message: 'Login sukses, Welcome back!' });
+  res.json({ ok: true, message: 'Login sukses!' });
 });
 
-// Middleware Cek Cookie JWT
+// Middleware JWT Auth
 function auth(req, res, next) {
   const token = req.cookies.auth_token;
-  if (!token) return res.status(401).json({ ok: false, message: 'Akses ditolak. Silakan login.' });
+  if (!token) return res.status(401).json({ ok: false, message: 'Akses ditolak.' });
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
@@ -111,29 +98,77 @@ function auth(req, res, next) {
     next();
   } catch (err) {
     res.clearCookie('auth_token');
-    return res.status(401).json({ ok: false, message: 'Sesi habis atau tidak valid.' });
+    return res.status(401).json({ ok: false, message: 'Sesi habis, login lagi ya.' });
   }
 }
 
-// ─── API ROUTES (Lainnya tetap sama, tinggal pasang middleware `auth`) ─────
-app.get('/api/stats', auth, async (req, res) => {
-  // ... (kode query stats lu seperti sebelumnya)
-  res.json({ ok: true, data: { totalUsers: 10, pendingDeposits: 2, pendingOrders: 1, totalRevenue: 50000 }}); // Contoh response
-});
-
-// Endpoint untuk Logout
 app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('auth_token');
   res.json({ ok: true, message: 'Logout berhasil.' });
 });
 
-// ─── FRONTEND ─────────────────────────────────────────────────────────────
+// ─── API ROUTES ─────────────────────────────────────────────────────────────
+app.get('/api/stats', auth, async (req, res) => {
+  try {
+    const [totalUsers, pendingDeposits, pendingOrders, revenueData] = await Promise.all([
+      User.countDocuments(),
+      Transaction.countDocuments({ status: 'pending' }),
+      PremiumOrder.countDocuments({ status: 'pending' }),
+      Transaction.aggregate([
+        { $match: { status: 'success' } },
+        { $group: { _id: null, total: { $sum: '$amountReal' } } },
+      ]),
+    ]);
+    res.json({
+      ok: true,
+      data: {
+        totalUsers,
+        pendingDeposits,
+        pendingOrders,
+        totalRevenue: revenueData[0]?.total || 0,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, message: 'Gagal mengambil statistik DB.' });
+  }
+});
+
+// Tambahin route /api/users, /api/transactions dll lu di sini dengan format yang sama pakai middleware `auth`...
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Connect DB (Vercel Serverless butuh koneksi di luar app.listen)
-connectDB(MONGO_URI).catch(err => console.error("Gagal konek DB", err));
+// ─── GLOBAL ERROR HANDLER BIAR GAK 500 BLANK ────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error("Global Error:", err.message);
+  res.status(500).json({ ok: false, message: 'Terjadi kesalahan di server: ' + err.message });
+});
 
-// HARUS EXPORT APP JIKA DI VERCEL
-module.exports = app;
+// ─── SERVERLESS MONGODB CONNECTION HANDLER ──────────────────────────────────
+// Ini kunci utamanya biar Vercel nggak crash!
+let isConnected = false;
+
+module.exports = async (req, res) => {
+  // Cegah koneksi berulang yang bikin timeout di Vercel
+  if (!isConnected) {
+    try {
+      console.log("Mencoba konek ke MongoDB...");
+      await mongoose.connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 5000, // Langsung gagal kalau 5 detik gak konek (biar gak nge-hang)
+      });
+      isConnected = true;
+      console.log("MongoDB Berhasil Konek!");
+    } catch (error) {
+      console.error("Gagal konek MongoDB:", error);
+      // Kasih respon jelas kalau DB yang bermasalah, bukan kodenya
+      return res.status(500).json({ 
+        ok: false, 
+        message: 'Koneksi Database Gagal. Pastikan MONGO_URI benar dan IP 0.0.0.0/0 sudah di-allow di MongoDB Atlas.' 
+      });
+    }
+  }
+  
+  // Lanjutin request ke Express app
+  return app(req, res);
+};
